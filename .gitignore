@@ -1,6 +1,6 @@
 # docker 
 *.config
-haproxy/*.cfg
+*.cfg
 
 # ansible 
 hosts
