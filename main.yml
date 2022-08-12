@@ -1,0 +1,64 @@
+---
+- hosts: node
+  become: yes
+
+
+  tasks:
+    - name: Install Docker dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - ca-certificates
+        - curl
+        - gnupg
+        - lsb-release
+        - python3-pip
+
+    - name: Setup official Docker repo
+      block:
+        - name: Add repo GPG key 
+          apt_key:
+            url: https://download.docker.com/linux/debian/gpg
+            state: present
+        - name: Add Docker repository
+          apt_repository:
+            repo: "deb https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+            state: present
+
+    - name: Install Docker
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: yes
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-compose-plugin
+
+    - name: Install Docker Module for Python
+      pip:
+        name: "{{ item }}"
+      loop:
+        - docker
+        - docker-compose
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Start Docker Compose services
+      docker_compose:
+        project_src: ./
+        state: present
+
+  handlers:
+    - name: Restart docker
+      service: 
+        name: docker
+        state: restarted
+

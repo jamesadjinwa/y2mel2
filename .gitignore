@@ -1,0 +1,10 @@
+# docker 
+*.config
+haproxy/*.cfg
+
+# ansible 
+hosts
+
+# python
+venv/
+
