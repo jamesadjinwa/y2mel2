@@ -18,7 +18,7 @@
 
     - name: Setup official Docker repo
       block:
-        - name: Add repo GPG key 
+        - name: Add repo GPG key
           apt_key:
             url: https://download.docker.com/linux/debian/gpg
             state: present
@@ -51,10 +51,43 @@
         state: started
         enabled: yes
 
+    - name: Create Project folder
+      file:
+        path: projectfiles
+        state: directory
+        mode: '0700'
+
+    - name: Copy project files on docker host
+      copy:
+        src: "{{ item }}"
+        dest: projectfiles/
+      with_items:
+        - codimd.config
+        - haproxy.config
+        - postgres.config
+        - haproxy
+        - docker-compose.yml
+        - .dockerignore
+
     - name: Start Docker Compose services
       docker_compose:
-        project_src: ./
+        project_src: projectfiles
         state: present
+      register: output
+
+    - ansible.builtin.debug:
+              var: output
+
+    - name: Destroy existing services
+      docker_compose:
+        project_src: projectfiles
+        state: absent
+      tags: destroy
+
+    - name: Destroy Project folder
+      file:
+        path: projectfiles
+        state: absent
 
   handlers:
     - name: Restart docker
