@@ -1,4 +1,5 @@
 ---
+
 - hosts: node
   become: yes
 
@@ -72,22 +73,51 @@
     - name: Start Docker Compose services
       docker_compose:
         project_src: projectfiles
+        build: yes
+        nocache: yes
+        recreate: always
         state: present
       register: output
 
     - ansible.builtin.debug:
               var: output
 
+    - name: Check if project folder exist
+      stat:
+        path: "./projectfiles"
+      register: project_files
+      tags: destroy
+
     - name: Destroy existing services
       docker_compose:
         project_src: projectfiles
+        remove_images: all
+        remove_volumes: yes
         state: absent
       tags: destroy
+      when: project_files.stat.exists
+
+    - name: Get details of all images
+      docker_host_info:
+        images: yes
+        #verbose_output: yes
+      register: image_info
+      tags: destroy
+
+    - name: Remove all images
+      docker_image:
+        name: "{{ item  }}"
+        state: absent
+      loop: "{{ image_info.images | map(attribute='Id') | list }}"
+      tags: destroy
+      ignore_errors: True
 
     - name: Destroy Project folder
       file:
         path: projectfiles
         state: absent
+      when: project_files.stat.exists
+      tags: destroy
 
   handlers:
     - name: Restart docker

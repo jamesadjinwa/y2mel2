@@ -30,14 +30,16 @@ services:
    build: ./haproxy
    container_name: haproxy
    volumes:
-     - haproxy_data:/usr/local/etc/haproxy:ro 
+     - haproxy_data:/usr/local/etc/haproxy:ro
+     - ./haproxy/certs:/etc/haproxy/certs
    env_file:
      - haproxy.config
    restart: always
    depends_on:
-     - codimd    
+     - codimd
    ports:
-     - "8080:80"
+     - "80:80"
+     - "443:443"
      - "8404:8404"
    networks:
      - front-tier
@@ -46,8 +48,8 @@ services:
 volumes:
   haproxy_data:
   codimd_uploads:
-  # mariadb_data:
   postgres_data:
+  nginx_data:
 
 networks:
   front-tier:
