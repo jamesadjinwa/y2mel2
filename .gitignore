@@ -1,6 +1,7 @@
 # docker 
 *.config
 *.cfg
+.cache
 
 # ansible 
 hosts
