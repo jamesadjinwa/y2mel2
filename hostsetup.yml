@@ -1,0 +1,8 @@
+---
+- hosts: node
+  become: yes
+
+  tasks:
+    - name: Create Ansible user
+    - name: Add SSH public key
+    - name: Modify SSHD config
